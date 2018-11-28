@@ -6,22 +6,9 @@
     Date last modified: 2018.11.22
     Python version: 3.4
 
-1. Create enemy class [COMPLETE]
-2. Load enemy images [COMPLETE]
-3. Create Enemy movement for one [COMPLETE]
-4. kamikaze - boost [COMPLETE]
-5. If enemy is inside window they can be hurt [COMPLETE]
-6. Collision detection for:
-    a. bullet/enemy and respawn [COMPLETE]
-    b. enemy/player and respawn [COMPLETE]
-    c. if enemies go out of bounds [COMPLETE]
-    d. If bullet hits player [COMPLETE]
-7. Enemy laser sounds [COMPLETE]
-8. Enemy explosions [COMPLETE]
-9. Add points to score if destroyed [COMPLETE]
-10.Enemy drop items (higher chance) [COMPLETE]
-11.Check if two ships spawn over lapping, if so, respawn
-12. End Boost animation if enemy dies
+    For a tutorial about writing your own space shooter or to understand how the 
+    game was created, please check out:
+    https://www.redhulimachinelearning.com
 '''
 
 # import necessary packages
@@ -86,7 +73,7 @@ class Player(pygame.sprite.Sprite):
         self.bullet_sound = bullet_sound
 
         # other player attributes
-        self.shield = 100
+        self.shield = 0
         self.lives = 3
         self.hidden = False
         self.hide_timer = pygame.time.get_ticks()
@@ -121,7 +108,7 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_DOWN]:
             self.speedy = +9
 
-        # fire weapons by holding the 'spacebar'
+        # fire weapons by holding the 'space' key
         if keys[pygame.K_SPACE] and not(self.rect.top > WINDOWHEIGHT):
             self.shoot()
 
@@ -206,7 +193,6 @@ class EnemyShip(pygame.sprite.Sprite):
         # enemy starting location
         self.rect.centerx = random.randrange(90, WINDOWWIDTH - 90)
         self.rect.bottom = random.randrange(-150, -20)
-        self.coords = (400, 100)
 
         # bullet attributes for enemy
         self.bullet_image = bullet_image
@@ -221,7 +207,6 @@ class EnemyShip(pygame.sprite.Sprite):
 
     def update(self):
         '''update enemy movement'''
-
         if self.rect.bottom > 50 and self.rect.bottom < 130:
             for i in range(self.num_of_shots):
                     self.shoot()
@@ -250,9 +235,9 @@ class EnemyShip(pygame.sprite.Sprite):
             self.bullet_sound.set_volume(0.2)
 
     def divebomb(self):
-        '''create curving flight divebomb flight pattern'''
-        boost = Boost(self.rect.center, 'boost', self.boost_anim)
-        self.sprites.add(boost)
+        '''divebomb flight pattern'''
+        #boost = Boost(self.rect.center, 'boost', self.boost_anim)
+        #self.sprites.add(boost)
         self.rect.bottom += self.speedy
 
 
@@ -323,7 +308,7 @@ class EnemyBullet(pygame.sprite.Sprite):
         '''update bullet'''
         self.rect.y += self.speedy
 
-        # if bullet goes off top of window, destroy it
+        # if bullet goes off bottom of window, destroy it
         if self.rect.bottom > WINDOWHEIGHT:
             self.kill()
 
@@ -507,10 +492,6 @@ def menu():
         event = pygame.event.poll()
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN:
-                #DISPLAYSURF.fill(BLACK)
-                #draw_text(DISPLAYSURF, "GET READY!", 50, WINDOWWIDTH/2, WINDOWHEIGHT/2, GREENYELLOW)
-                #pygame.display.flip()
-                #FPSCLOCK.tick(20)
                 break
             elif event.key == pygame.K_q:
                 pygame.quit()
@@ -658,12 +639,14 @@ def main():
             # create group for enemies
             enemy_ships = pygame.sprite.Group()
 
-            player = Player(player_img, bullet_img, missile_img, all_active_sprites, bullets, bullet_sound, missile_sound)
+            player = Player(player_img, bullet_img, missile_img, all_active_sprites, 
+                            bullets, bullet_sound, missile_sound)
             shield = Shield(energy_shield, player.rect.center, player)
             all_active_sprites.add(player, shield)
 
             for i in range(2):
-                enemy_ship = EnemyShip(enemy_img, enemy_bullet_img, all_active_sprites, enemy_bullets, enemy_bullet_sound, boost_anim)
+                enemy_ship = EnemyShip(enemy_img, enemy_bullet_img, all_active_sprites, 
+                                       enemy_bullets, enemy_bullet_sound, boost_anim)
                 all_active_sprites.add(enemy_ship)
                 enemy_ships.add(enemy_ship)
             
@@ -691,15 +674,15 @@ def main():
         asteroid_hit = pygame.sprite.groupcollide(asteroids, bullets, True, pygame.sprite.collide_circle)
         # when asteroids are destroyed, spawn new asteroids
         for hit in asteroid_hit:
-            score += 50 - hit.radius # different scores for different size asteroids
-            large_expl.play()
-            large_expl.set_volume(0.1)
-            expl = Explosion(hit.rect.center, 'large', explosion_anim)
-            all_active_sprites.add(expl)
-            if random.random() > 0.92:
-                powerup = PowerUp(hit.rect.center, powerup_images)
-                all_active_sprites.add(powerup)
-                powerups.add(powerup)
+            #score += 50 - hit.radius # different scores for different size asteroids
+            #large_expl.play()
+            #large_expl.set_volume(0.1)
+            #expl = Explosion(hit.rect.center, 'large', explosion_anim)
+            #all_active_sprites.add(expl)
+            #if random.random() > 0.92:
+            #    powerup = PowerUp(hit.rect.center, powerup_images)
+            #    all_active_sprites.add(powerup)
+            #    powerups.add(powerup)
             new_asteroid = Asteroid(asteroid_images, all_active_sprites, asteroids)
             all_active_sprites.add(new_asteroid)
             asteroids.add(new_asteroid)
@@ -708,16 +691,17 @@ def main():
         enemy_hit = pygame.sprite.groupcollide(enemy_ships, bullets, True, pygame.sprite.collide_circle)
         # when asteroids are destroyed, spawn new asteroids
         for hit in enemy_hit:
-            score += 75
-            ship_expl.play()
-            ship_expl.set_volume(0.1)
-            expl = Explosion(hit.rect.center, 'ship', explosion_anim)
-            all_active_sprites.add(expl)
-            if random.random() > 0.85:
-                powerup = PowerUp(hit.rect.center, powerup_images)
-                all_active_sprites.add(powerup)
-                powerups.add(powerup)
-            new_ship = EnemyShip(enemy_img, enemy_bullet_img, all_active_sprites, enemy_bullets, enemy_bullet_sound, boost_anim)
+            #score += 75
+            #ship_expl.play()
+            #ship_expl.set_volume(0.1)
+            #expl = Explosion(hit.rect.center, 'ship', explosion_anim)
+            #all_active_sprites.add(expl)
+            #if random.random() > 0.85:
+            #    powerup = PowerUp(hit.rect.center, powerup_images)
+            #    all_active_sprites.add(powerup)
+            #    powerups.add(powerup)
+            new_ship = EnemyShip(enemy_img, enemy_bullet_img, all_active_sprites, enemy_bullets, 
+                                 enemy_bullet_sound, boost_anim)
             all_active_sprites.add(new_ship)
             enemy_ships.add(new_ship)
             
@@ -726,6 +710,8 @@ def main():
 
         # if player is hit
         for hit in player_hit_by_bullet:
+            print("Player hit")
+            '''
             player.shield -= 5
             if player.shield <= 0:
                 ship_expl.play()
@@ -734,40 +720,41 @@ def main():
                 player.hide()
                 player.lives -= 1
                 player.shield = 100
-
+            '''
         # check for collisions between asteroids and player
         player_hit = pygame.sprite.spritecollide(player, asteroids, True)
 
         # if player is hit
         for hit in player_hit:
-            player.shield -= random.randint(10, 25)
+        #    player.shield -= random.randint(10, 25)
             #print(player.shield)
-            small_expl.play()
-            small_expl.set_volume(0.1)
-            expl = Explosion(hit.rect.center, 'small', explosion_anim)
-            all_active_sprites.add(expl)
+        #    small_expl.play()
+        #    small_expl.set_volume(0.1)
+        #    expl = Explosion(hit.rect.center, 'small', explosion_anim)
+        #    all_active_sprites.add(expl)
             new_asteroid = Asteroid(asteroid_images, all_active_sprites, asteroids)
             all_active_sprites.add(new_asteroid)
             asteroids.add(new_asteroid)
-            if player.shield <= 0:
-                ship_expl.play()
-                expl_ship = Explosion(player.rect.center, 'ship', explosion_anim)
-                all_active_sprites.add(expl_ship)
-                player.hide()
-                player.lives -= 1
-                player.shield = 100
+        #    if player.shield <= 0:
+        #        ship_expl.play()
+        #        expl_ship = Explosion(player.rect.center, 'ship', explosion_anim)
+        #       all_active_sprites.add(expl_ship)
+        #        player.hide()
+        #        player.lives -= 1
+        #        player.shield = 100
 
         # check for collisions between enemy ships and player
         player_hit_by_ship = pygame.sprite.spritecollide(player, enemy_ships, True)
 
-        # if player is hit
+        # if player is hit by enemy ship
         for hit in player_hit_by_ship:
-            player.shield -= 35
-            ship_expl.play()
-            ship_expl.set_volume(0.1)
-            expl = Explosion(hit.rect.center, 'ship', explosion_anim)
-            all_active_sprites.add(expl)
-            new_ship = EnemyShip(enemy_img, enemy_bullet_img, all_active_sprites, enemy_bullets, enemy_bullet_sound, boost_anim)
+        #    player.shield -= 35
+        #    ship_expl.play()
+        #    ship_expl.set_volume(0.1)
+        #    expl = Explosion(hit.rect.center, 'ship', explosion_anim)
+        #    all_active_sprites.add(expl)
+            new_ship = EnemyShip(enemy_img, enemy_bullet_img, all_active_sprites, enemy_bullets, 
+                                 enemy_bullet_sound, boost_anim)
             all_active_sprites.add(new_ship)
             enemy_ships.add(new_ship)
             if player.shield <= 0:
@@ -777,10 +764,10 @@ def main():
                 player.hide()
                 player.lives -= 1
                 player.shield = 100
-
+        '''
         # check for collisions between player and power ups
         powerup_hit = pygame.sprite.spritecollide(player, powerups, True)
-
+        
         # check if player hits power up
         for hit in powerup_hit:
             if hit.type == 'shield':
@@ -791,7 +778,7 @@ def main():
             if hit.type == 'upgrade':
                 score += 50
                 player.upgrade_power()
-
+        '''
         # If player dies, return to menu
         if player.lives == 0 and not expl_ship.alive():
             #print("in loop")
@@ -804,19 +791,18 @@ def main():
         # draw background image to game
         DISPLAYSURF.blit(background, background_rect)
         DISPLAYSURF.blit(planet, planet_rect)
-        #DISPLAYSURF.blit(asteroid, asteroid_rect)
 
         all_active_sprites.draw(DISPLAYSURF)
-        DISPLAYSURF.blit(black_bar, (0,0))
-        pygame.draw.rect(DISPLAYSURF, GREY, (0, 0, WINDOWWIDTH, 35), 3)
-        shield_bar(DISPLAYSURF, player.shield)
+        #DISPLAYSURF.blit(black_bar, (0,0))
+        #pygame.draw.rect(DISPLAYSURF, GREY, (0, 0, WINDOWWIDTH, 35), 3)
+        #shield_bar(DISPLAYSURF, player.shield)
 
         # display score
-        draw_text(DISPLAYSURF, "SCORE", 12, WINDOWWIDTH / 2, 2, WHITE)
-        draw_text(DISPLAYSURF, str(score), 25, WINDOWWIDTH / 2, 12, WHITE)
+        #draw_text(DISPLAYSURF, "SCORE", 12, WINDOWWIDTH / 2, 2, WHITE)
+        #draw_text(DISPLAYSURF, str(score), 25, WINDOWWIDTH / 2, 12, WHITE)
 
         # display lives
-        draw_lives(DISPLAYSURF, WINDOWWIDTH - 100, 5, player.lives, small_player_image)
+        #draw_lives(DISPLAYSURF, WINDOWWIDTH - 100, 5, player.lives, small_player_image)
 
         # done after drawing everything to the screen
         FPSCLOCK.tick(FPS) # number of FPS per loop
