@@ -3,7 +3,7 @@
     File name: Space_Shooter.py
     Author: Joshua Willman
     Date created: 2018.10.28
-    Date last modified: 2018.11.22
+    Date last modified: 2018.12.02
     Python version: 3.4
 
     For a tutorial about writing your own space shooter or to understand how the 
@@ -236,18 +236,18 @@ class EnemyShip(pygame.sprite.Sprite):
 
     def divebomb(self):
         '''divebomb flight pattern'''
-        #boost = Boost(self.rect.center, 'boost', self.boost_anim)
-        #self.sprites.add(boost)
+        boost = Boost(self.rect.center, 'boost', self.boost_anim)
+        self.sprites.add(boost)
         self.rect.bottom += self.speedy
 
 
 class Boost(pygame.sprite.Sprite):
     '''create Boost class'''
-    def __init__(self, center, size, boost_anim):
+    def __init__(self, center, b_type, boost_anim):
         super().__init__()
-        self.size = size
+        self.b_type = b_type
         self.boost_anim = boost_anim
-        self.image = boost_anim[self.size][0]
+        self.image = boost_anim[self.b_type][0]
         self.rect = self.image.get_rect()
         self.rect.center = center
         self.frame = 0
@@ -260,11 +260,11 @@ class Boost(pygame.sprite.Sprite):
         if current_time - self.last_update > self.frame_rate:
             self.last_update = current_time
             self.frame += 1
-            if self.frame == len(self.boost_anim[self.size]):
+            if self.frame == len(self.boost_anim[self.b_type]):
                 self.kill()
             else:
                 center = self.rect.center 
-                self.image = self.boost_anim[self.size][self.frame]
+                self.image = self.boost_anim[self.b_type][self.frame]
                 self.rect = self.image.get_rect()
                 self.rect.midtop = center
         
@@ -380,11 +380,11 @@ class Asteroid(pygame.sprite.Sprite):
 
 class Explosion(pygame.sprite.Sprite):
     '''create Explosion class'''
-    def __init__(self, center, size, explosion_anim):
+    def __init__(self, center, ex_type, explosion_anim):
         super().__init__()
-        self.size = size
+        self.ex_type = ex_type
         self.explosion_anim = explosion_anim
-        self.image = explosion_anim[self.size][0]
+        self.image = explosion_anim[self.ex_type][0]
         self.rect = self.image.get_rect()
         self.rect.center = center
         self.frame = 0
@@ -397,11 +397,11 @@ class Explosion(pygame.sprite.Sprite):
         if current_time - self.last_update > self.frame_rate:
             self.last_update = current_time
             self.frame +=1
-            if self.frame == len(self.explosion_anim[self.size]):
+            if self.frame == len(self.explosion_anim[self.ex_type]):
                 self.kill()
             else:
                 center = self.rect.center
-                self.image = self.explosion_anim[self.size][self.frame]
+                self.image = self.explosion_anim[self.ex_type][self.frame]
                 self.rect = self.image.get_rect()
                 self.rect.center = center
 
@@ -658,7 +658,6 @@ def main():
             # score variable
             score = 0
 
-        #FPSCLOCK.tick(FPS) # number of FPS per loop
         # process inputs/events
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -677,8 +676,8 @@ def main():
             #score += 50 - hit.radius # different scores for different size asteroids
             #large_expl.play()
             #large_expl.set_volume(0.1)
-            #expl = Explosion(hit.rect.center, 'large', explosion_anim)
-            #all_active_sprites.add(expl)
+            expl = Explosion(hit.rect.center, 'large', explosion_anim)
+            all_active_sprites.add(expl)
             #if random.random() > 0.92:
             #    powerup = PowerUp(hit.rect.center, powerup_images)
             #    all_active_sprites.add(powerup)
@@ -694,8 +693,8 @@ def main():
             #score += 75
             #ship_expl.play()
             #ship_expl.set_volume(0.1)
-            #expl = Explosion(hit.rect.center, 'ship', explosion_anim)
-            #all_active_sprites.add(expl)
+            expl = Explosion(hit.rect.center, 'ship', explosion_anim)
+            all_active_sprites.add(expl)
             #if random.random() > 0.85:
             #    powerup = PowerUp(hit.rect.center, powerup_images)
             #    all_active_sprites.add(powerup)
@@ -730,15 +729,15 @@ def main():
             #print(player.shield)
         #    small_expl.play()
         #    small_expl.set_volume(0.1)
-        #    expl = Explosion(hit.rect.center, 'small', explosion_anim)
-        #    all_active_sprites.add(expl)
+            expl = Explosion(hit.rect.center, 'small', explosion_anim)
+            all_active_sprites.add(expl)
             new_asteroid = Asteroid(asteroid_images, all_active_sprites, asteroids)
             all_active_sprites.add(new_asteroid)
             asteroids.add(new_asteroid)
         #    if player.shield <= 0:
         #        ship_expl.play()
         #        expl_ship = Explosion(player.rect.center, 'ship', explosion_anim)
-        #       all_active_sprites.add(expl_ship)
+        #        all_active_sprites.add(expl_ship)
         #        player.hide()
         #        player.lives -= 1
         #        player.shield = 100
@@ -751,8 +750,8 @@ def main():
         #    player.shield -= 35
         #    ship_expl.play()
         #    ship_expl.set_volume(0.1)
-        #    expl = Explosion(hit.rect.center, 'ship', explosion_anim)
-        #    all_active_sprites.add(expl)
+            expl = Explosion(hit.rect.center, 'ship', explosion_anim)
+            all_active_sprites.add(expl)
             new_ship = EnemyShip(enemy_img, enemy_bullet_img, all_active_sprites, enemy_bullets, 
                                  enemy_bullet_sound, boost_anim)
             all_active_sprites.add(new_ship)
