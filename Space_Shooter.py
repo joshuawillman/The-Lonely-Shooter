@@ -73,7 +73,7 @@ class Player(pygame.sprite.Sprite):
         self.bullet_sound = bullet_sound
 
         # other player attributes
-        self.shield = 0
+        self.shield = 100
         self.lives = 3
         self.hidden = False
         self.hide_timer = pygame.time.get_ticks()
@@ -89,7 +89,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.bottom = WINDOWHEIGHT - 10
 
         # timer for upgrades
-        if self.upgrade >= 2 and pygame.time.get_ticks() - self.upgrade_timer > 4000:
+        if self.upgrade >= 2 and pygame.time.get_ticks() - self.upgrade_timer > 4500:
             self.upgrade -= 1
             self.upgrade_timer = pygame.time.get_ticks()
 
@@ -349,8 +349,8 @@ class Asteroid(pygame.sprite.Sprite):
         self.speedx = random.randrange(-2, 2)
 
         # add rotation elements to the asteroids to make them look more realistic
-        self.rotation = 0
-        self.rotation_speed = random.randrange(-8, 8)
+        self.angle = 0 # the amount of rotation
+        self.rotation_speed = random.randrange(-7, 7)
         self.last_update = pygame.time.get_ticks() # time for rotating asteroid
 
     def update(self):
@@ -370,8 +370,8 @@ class Asteroid(pygame.sprite.Sprite):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_update > 50:
             self.last_update = current_time # reset current time
-            self.rotation = (self.rotation + self.rotation_speed) % 360
-            new_image = pygame.transform.rotate(self.image_orig, self.rotation) 
+            self.angle = (self.angle + self.rotation_speed) % 360
+            new_image = pygame.transform.rotate(self.image_orig, self.angle) 
             old_center = self.rect.center
             self.image = new_image
             self.rect = self.image.get_rect()
@@ -410,9 +410,8 @@ class PowerUp(pygame.sprite.Sprite):
     '''create PowerUp class'''
     def __init__(self, center, powerup_images):
         super().__init__()
-        self.type = random.choice(['shield', 'upgrade'])
+        self.type = random.choice(['shield', 'missile'])
         self.image = powerup_images[self.type]
-        #self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
         # spawn the powerup according to current position of enemy
         self.rect.center = center
@@ -538,8 +537,8 @@ def main():
     
     # load player and bullet images
     player_img = pygame.image.load('images/spaceship.png').convert()
-    small_player_image = pygame.transform.scale(player_img, (25, 25))
-    small_player_image.set_colorkey(BLACK)
+    life_player_image = pygame.transform.scale(player_img, (25, 25))
+    life_player_image.set_colorkey(BLACK)
     bullet_img = pygame.image.load('images/laser_red.png').convert()
     enemy_bullet_img = pygame.image.load('images/laser_purple.png').convert()
     missile_img = pygame.image.load('images/missile.png').convert_alpha()
@@ -597,8 +596,8 @@ def main():
     powerup_images = {}
     powerup_images['shield'] = pygame.image.load(path.join(img_dir, 'shield.png')).convert_alpha()
     powerup_images['shield'] = pygame.transform.scale(powerup_images['shield'], (35, 35)) 
-    powerup_images['upgrade'] = pygame.image.load(path.join(img_dir, 'missile_powerup.png')).convert_alpha()
-    powerup_images['upgrade'] = pygame.transform.scale(powerup_images['upgrade'], (45, 45)) 
+    powerup_images['missile'] = pygame.image.load(path.join(img_dir, 'missile_powerup.png')).convert_alpha()
+    powerup_images['missile'] = pygame.transform.scale(powerup_images['missile'], (45, 45)) 
 
     # load game sounds
     bullet_sound = pygame.mixer.Sound(path.join(sound_dir, 'laser.wav'))
@@ -673,15 +672,15 @@ def main():
         asteroid_hit = pygame.sprite.groupcollide(asteroids, bullets, True, pygame.sprite.collide_circle)
         # when asteroids are destroyed, spawn new asteroids
         for hit in asteroid_hit:
-            #score += 50 - hit.radius # different scores for different size asteroids
-            #large_expl.play()
-            #large_expl.set_volume(0.1)
+            score += 50 - hit.radius # different scores for different size asteroids
+            large_expl.play()
+            large_expl.set_volume(0.1)
             expl = Explosion(hit.rect.center, 'large', explosion_anim)
             all_active_sprites.add(expl)
-            #if random.random() > 0.92:
-            #    powerup = PowerUp(hit.rect.center, powerup_images)
-            #    all_active_sprites.add(powerup)
-            #    powerups.add(powerup)
+            if random.random() > 0.92:
+                powerup = PowerUp(hit.rect.center, powerup_images)
+                all_active_sprites.add(powerup)
+                powerups.add(powerup)
             new_asteroid = Asteroid(asteroid_images, all_active_sprites, asteroids)
             all_active_sprites.add(new_asteroid)
             asteroids.add(new_asteroid)
@@ -690,15 +689,15 @@ def main():
         enemy_hit = pygame.sprite.groupcollide(enemy_ships, bullets, True, pygame.sprite.collide_circle)
         # when asteroids are destroyed, spawn new asteroids
         for hit in enemy_hit:
-            #score += 75
-            #ship_expl.play()
-            #ship_expl.set_volume(0.1)
+            score += 75
+            ship_expl.play()
+            ship_expl.set_volume(0.1)
             expl = Explosion(hit.rect.center, 'ship', explosion_anim)
             all_active_sprites.add(expl)
-            #if random.random() > 0.85:
-            #    powerup = PowerUp(hit.rect.center, powerup_images)
-            #    all_active_sprites.add(powerup)
-            #    powerups.add(powerup)
+            if random.random() > 0.85:
+                powerup = PowerUp(hit.rect.center, powerup_images)
+                all_active_sprites.add(powerup)
+                powerups.add(powerup)
             new_ship = EnemyShip(enemy_img, enemy_bullet_img, all_active_sprites, enemy_bullets, 
                                  enemy_bullet_sound, boost_anim)
             all_active_sprites.add(new_ship)
@@ -709,8 +708,7 @@ def main():
 
         # if player is hit
         for hit in player_hit_by_bullet:
-            print("Player hit")
-            '''
+            #print("Player hit")
             player.shield -= 5
             if player.shield <= 0:
                 ship_expl.play()
@@ -719,37 +717,37 @@ def main():
                 player.hide()
                 player.lives -= 1
                 player.shield = 100
-            '''
+
         # check for collisions between asteroids and player
         player_hit = pygame.sprite.spritecollide(player, asteroids, True)
 
         # if player is hit
         for hit in player_hit:
-        #    player.shield -= random.randint(10, 25)
+            player.shield -= random.randint(10, 25)
             #print(player.shield)
-        #    small_expl.play()
-        #    small_expl.set_volume(0.1)
+            small_expl.play()
+            small_expl.set_volume(0.1)
             expl = Explosion(hit.rect.center, 'small', explosion_anim)
             all_active_sprites.add(expl)
             new_asteroid = Asteroid(asteroid_images, all_active_sprites, asteroids)
             all_active_sprites.add(new_asteroid)
             asteroids.add(new_asteroid)
-        #    if player.shield <= 0:
-        #        ship_expl.play()
-        #        expl_ship = Explosion(player.rect.center, 'ship', explosion_anim)
-        #        all_active_sprites.add(expl_ship)
-        #        player.hide()
-        #        player.lives -= 1
-        #        player.shield = 100
+            if player.shield <= 0:
+                ship_expl.play()
+                expl_ship = Explosion(player.rect.center, 'ship', explosion_anim)
+                all_active_sprites.add(expl_ship)
+                player.hide()
+                player.lives -= 1
+                player.shield = 100
 
         # check for collisions between enemy ships and player
         player_hit_by_ship = pygame.sprite.spritecollide(player, enemy_ships, True)
 
         # if player is hit by enemy ship
         for hit in player_hit_by_ship:
-        #    player.shield -= 35
-        #    ship_expl.play()
-        #    ship_expl.set_volume(0.1)
+            player.shield -= 35
+            ship_expl.play()
+            ship_expl.set_volume(0.1)
             expl = Explosion(hit.rect.center, 'ship', explosion_anim)
             all_active_sprites.add(expl)
             new_ship = EnemyShip(enemy_img, enemy_bullet_img, all_active_sprites, enemy_bullets, 
@@ -763,7 +761,7 @@ def main():
                 player.hide()
                 player.lives -= 1
                 player.shield = 100
-        '''
+        
         # check for collisions between player and power ups
         powerup_hit = pygame.sprite.spritecollide(player, powerups, True)
         
@@ -774,10 +772,10 @@ def main():
                 player.shield += 20
                 if player.shield >= 100:
                     player.shield = 100
-            if hit.type == 'upgrade':
+            if hit.type == 'missile':
                 score += 50
                 player.upgrade_power()
-        '''
+        
         # If player dies, return to menu
         if player.lives == 0 and not expl_ship.alive():
             #print("in loop")
@@ -792,16 +790,16 @@ def main():
         DISPLAYSURF.blit(planet, planet_rect)
 
         all_active_sprites.draw(DISPLAYSURF)
-        #DISPLAYSURF.blit(black_bar, (0,0))
-        #pygame.draw.rect(DISPLAYSURF, GREY, (0, 0, WINDOWWIDTH, 35), 3)
-        #shield_bar(DISPLAYSURF, player.shield)
+        DISPLAYSURF.blit(black_bar, (0,0))
+        pygame.draw.rect(DISPLAYSURF, GREY, (0, 0, WINDOWWIDTH, 35), 3)
+        shield_bar(DISPLAYSURF, player.shield)
 
         # display score
-        #draw_text(DISPLAYSURF, "SCORE", 12, WINDOWWIDTH / 2, 2, WHITE)
-        #draw_text(DISPLAYSURF, str(score), 25, WINDOWWIDTH / 2, 12, WHITE)
+        draw_text(DISPLAYSURF, "SCORE", 12, WINDOWWIDTH / 2, 2, WHITE)
+        draw_text(DISPLAYSURF, str(score), 25, WINDOWWIDTH / 2, 12, WHITE)
 
         # display lives
-        #draw_lives(DISPLAYSURF, WINDOWWIDTH - 100, 5, player.lives, small_player_image)
+        draw_lives(DISPLAYSURF, WINDOWWIDTH - 100, 5, player.lives, life_player_image)
 
         # done after drawing everything to the screen
         FPSCLOCK.tick(FPS) # number of FPS per loop
