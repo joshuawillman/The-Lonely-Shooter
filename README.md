@@ -6,9 +6,9 @@ The Lonely Shooter is a simple retro-style space shooter set out in the depths o
 <p align="center">
 <img src="https://redhuli.io/wp-content/uploads/2018/12/The_Lonely_Shooter.png" width="400" height="100" title="Game Title"> </p>
 <p align="center">
-<img src="http://redhulimachinelearning.com/wp-content/uploads/2018/12/Screen-Shot-2018-12-31-at-18.36.17-e1546252770929.png" width="240" height="360" title="Game Screen"></p>
+<img src="https://redhuli.io/wp-content/uploads/2018/12/Screen-Shot-2018-12-31-at-18.36.17-e1546252770929.png" width="240" height="360" title="Game Screen"></p>
 <p align="center">
-<img src="http://redhulimachinelearning.com/wp-content/uploads/2018/12/gamescreen-e1545144372602.png" width="240" height="360" title="Space Shooter"> </p>
+<img src="https://redhuli.io/wp-content/uploads/2018/12/gamescreen-e1545144372602.png" width="240" height="360" title="Space Shooter"> </p>
 
 ### Prerequisites
 
