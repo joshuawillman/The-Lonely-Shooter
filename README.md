@@ -26,7 +26,7 @@ git clone https://github.com/joshuawillman/The-Lonely-Shooter
 
 ## Author
 
-* **Joshua Willman** - *Blog* - [RedHuli](https://redhuli.io)
+* **Joshua Willman** - *Blog* - [redhuli.io](https://redhuli.io)
 
 ## Acknowledgments
 
